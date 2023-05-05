@@ -1,0 +1,114 @@
+# Based on https://github.com/actions-rs/meta/blob/master/recipes/quickstart.md
+
+on: [push, pull_request]
+
+name: Continuous Integration
+
+jobs:
+  check:
+    name: Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: Install dependencies
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          sudo apt install -y \
+            postgresql-server-dev-"$(bin/release-tools pg-major-version)"
+      - name: Cache ~/.cargo
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo
+          key: ${{ runner.os }}-rust-dot-cargo-${{ hashFiles('Cargo.lock') }}
+      - name: Setup tools in ~/.cargo
+        run: |
+          bin/release-tools initialize-cargo-pgrx
+      - name: Initialize PGRX in ~/.pgrx
+        run: |
+          bin/release-tools initialize-pgrx-with-local-pg
+      - uses: actions-rs/cargo@v1
+        with:
+          command: check
+
+  test:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - name: Install dependencies
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          sudo apt install -y \
+            postgresql-server-dev-"$(bin/release-tools pg-major-version)"
+      - name: Cache ~/.cargo
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo
+          key: ${{ runner.os }}-rust-dot-cargo-${{ hashFiles('Cargo.lock') }}
+      - name: Setup tools in ~/.cargo
+        run: |
+          bin/release-tools initialize-cargo-pgrx
+      - name: Initialize PGRX in ~/.pgrx
+        run: |
+          bin/release-tools initialize-pgrx-with-local-pg
+      - uses: actions-rs/cargo@v1
+        with:
+          command: test
+
+  fmt:
+    name: Rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - run: rustup component add rustfmt
+      - uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --all -- --check
+
+  clippy:
+    name: Clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      - run: rustup component add clippy
+      - name: Install dependencies
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          sudo apt install -y \
+            postgresql-server-dev-"$(bin/release-tools pg-major-version)"
+      - name: Cache ~/.cargo
+        uses: actions/cache@v3
+        with:
+          path: ~/.cargo
+          key: ${{ runner.os }}-rust-dot-cargo-${{ hashFiles('Cargo.lock') }}
+      - name: Setup tools in ~/.cargo
+        run: |
+          bin/release-tools initialize-cargo-pgrx
+      - name: Initialize PGRX in ~/.pgrx
+        run: |
+          bin/release-tools initialize-pgrx-with-local-pg
+      - uses: actions-rs/cargo@v1
+        with:
+          command: clippy
+          args: -- -D warnings

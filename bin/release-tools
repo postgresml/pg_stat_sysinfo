@@ -1,0 +1,110 @@
+#!/bin/bash
+set -o errexit -o nounset -o pipefail
+
+function main {
+  msg "Please pass a subcommand:"
+  self-help >&2
+}
+
+### Obtain package version.
+function notional-package-version {
+  cargo pkgid | cut -d'#' -f2
+}
+
+### Name of package.
+function notional-package-name {
+  cargo pkgid | sed -E 's|^.+/([^/]+)#.+$|\1| ; y|_|-|'
+}
+
+### Name of package in the format of Postgres extensions on Debian distros.
+function apt-package-name {
+  out "postgresql-$(notional-package-name)-$(pg-major-version)"
+}
+
+### Upload this DEB with `deb-s3`.
+function upload-deb-to-s3 {
+  local bucket="$1"
+  local pkg="$2"
+  local codename=
+  codename="$(lsb-codename)"
+
+  local opts=(
+    --bucket "$bucket"
+    --codename "$codename"
+    "$pkg"
+  )
+
+  deb-s3 upload "${opts[@]}"
+}
+
+### Examine a `Cargo.toml` file to find the version of PGRX that is referenced.
+function find-pgrx-version {
+  egrep '^pgrx = { version = "=[^0-9]*([^"]+)"' |
+  egrep -o '"[^0-9]*([^"]+)"' |
+  tr -d -c '.0-9'
+}
+
+### Install the version of pgrx needed by the Cargo project.
+function initialize-cargo-pgrx {
+  local pgrx_version=
+  pgrx_version="$(find-pgrx-version < Cargo.toml)"
+  cargo install cargo-pgrx --version "$pgrx_version"
+}
+
+
+### Run `cargo pgrx init` with whatever version of Postgres is installed.
+function initialize-pgrx-with-local-pg {
+  local path= major_version=
+  path="$(which pg_config)"
+  major_version="$(pg-major-version)"
+  cargo pgrx init --pg"$major_version" "$path"
+}
+
+### Obtain Linux Standards Base codename.
+function lsb-codename {
+  lsb_release -c | cut -f2
+}
+
+### Get the Postgres major version from Postgres.
+function pg-major-version {
+  pg_config --version | cut -d' ' -f 2 | cut -d. -f1
+}
+
+### Install the `deb-s3` utility.
+function setup-deb-s3 {
+  local v='0.11.4'
+  local opts=(
+    -sSfL
+    https://github.com/deb-s3/deb-s3/releases/download/"$v"/deb-s3-"$v".gem
+    -o
+    deb-s3-"$v".gem
+  )
+
+  curl "${opts[@]}"
+
+  gem install deb-s3-"$v".gem
+}
+
+function self-help {
+  local self="$0"
+  sed -nE '/^### / { h; n; /^function / { G; s/### / -- /; p; }; }' "$self" |
+  sed -E 's/^function ([^ ]+) .+$/\1/'
+}
+
+
+##################################################################### Utilities
+
+function msg { out "$*" >&2 ;}
+function err { local x=$? ; msg "$*" ; return $(( $x == 0 ? 1 : $x )) ;}
+function out { printf '%s\n' "$*" ;}
+
+# Handles "no-match" exit code specified by POSIX for filtering tools.
+function maybe { "$@" || return $(( $? == 1 ? 0 : $? )) ;}
+
+
+######################### Delegates to subcommands or runs main, as appropriate
+
+if declare -f -- "${1:-}" >/dev/null
+then "$@"
+else main "$@"
+fi

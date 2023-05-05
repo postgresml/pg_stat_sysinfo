@@ -1,0 +1,43 @@
+[package]
+name = "pg_stat_sysinfo"
+version = "0.0.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[features]
+default = ["pg14"]
+pg11 = ["pgrx/pg11", "pgrx-tests/pg11" ]
+pg12 = ["pgrx/pg12", "pgrx-tests/pg12" ]
+pg13 = ["pgrx/pg13", "pgrx-tests/pg13" ]
+pg14 = ["pgrx/pg14", "pgrx-tests/pg14" ]
+pg15 = ["pgrx/pg15", "pgrx-tests/pg15" ]
+pg_test = []
+
+[dependencies]
+anyhow = "1"
+bytesize = "1.1.0"
+ciborium = "0.2.0"
+heapless = "0.7.16"
+lazy_static = "1.4.0"
+parking_lot = "0.12.1"
+pgrx = { version = "=0.7.4", features = ["time-crate"] }
+serde = "1.0.152"
+serde_bare = { version = "0.5.0", features = ["std"] }
+serde_json = "1.0.91"
+sysinfo = "0.27.5"
+time = { version = "0.3.17", features = ["serde-human-readable"] }
+
+[dev-dependencies]
+pgrx-tests = "=0.7.4"
+
+[profile.dev]
+panic = "unwind"
+lto = "thin"
+
+[profile.release]
+panic = "unwind"
+opt-level = 3
+lto = "fat"
+codegen-units = 1
