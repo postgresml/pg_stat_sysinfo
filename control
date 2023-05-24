@@ -1,0 +1,11 @@
+Package: postgresql-pg-stat-sysinfo-${PGVERSION}
+Version: ${PACKAGE_VERSION}
+Section: database
+Priority: optional
+Architecture: ${ARCH}
+Depends: postgresql-${PGVERSION}
+Maintainer: PostgresML <team@postgresml.org>
+Homepage: https://postgresml.org
+Description: PG Stat Sysinfo - system statistics inside PostgreSQL.
+ Detailed system statistics, made available through an SQL interface
+ via PostgreSQL.
