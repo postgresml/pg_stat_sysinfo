@@ -116,7 +116,7 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_DEFAULT_REGION: ${{ vars.AWS_DEFAULT_REGION }}
       run: |
-        for pg in {11..15}; do
+        for pg in {14..15}; do
           export PACKAGE_VERSION=${{ inputs.packageVersion }}
           export PGVERSION=${pg}
 
