@@ -30,7 +30,7 @@ sysinfo = "0.27.5"
 time = { version = "0.3.17", features = ["serde-human-readable"] }
 
 [dev-dependencies]
-pgrx-tests = "=0.7.4"
+pgrx-tests = "=0.8.2"
 
 [profile.dev]
 panic = "unwind"
