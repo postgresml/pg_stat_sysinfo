@@ -82,6 +82,19 @@ SELECT * FROM pg_stat_sysinfo_cache_summary();
 
 ```
 
+NVIDIA GPU statistics are available if the `nvidia-smi` command is available
+
+```sql
+----
+SELECT device_id, device_name, total_memory_mb, used_memory_mb, temperature_c from pg_gpu_info();
+ device_id | device_name | total_memory_mb | used_memory_mb | temperature_c 
+-----------+-------------+-----------------+----------------+---------------
+         0 | Tesla T4    |     16106.12736 |   12277.972992 |            59
+         1 | Tesla T4    |     16106.12736 |   13227.982848 |            58
+         2 | Tesla T4    |     16106.12736 |    2043.871232 |            56
+         3 | Tesla T4    |     16106.12736 |    9325.182976 |            53
+(4 rows)
+
 ## Configuration Changes
 
 The `pg_stat_sysinfo.interval` can be updated by changing `postgres.conf` and
