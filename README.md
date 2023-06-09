@@ -94,7 +94,7 @@ SELECT device_id, device_name, total_memory_mb, used_memory_mb, temperature_c fr
          2 | Tesla T4    |     16106.12736 |    2043.871232 |            56
          3 | Tesla T4    |     16106.12736 |    9325.182976 |            53
 (4 rows)
-
+```
 ## Configuration Changes
 
 The `pg_stat_sysinfo.interval` can be updated by changing `postgres.conf` and
