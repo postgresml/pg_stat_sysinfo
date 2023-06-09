@@ -21,6 +21,7 @@ bytesize = "1.1.0"
 ciborium = "0.2.0"
 heapless = "0.7.16"
 lazy_static = "1.4.0"
+nvml-wrapper = "0.9.0"
 parking_lot = "0.12.1"
 pgrx = { version = "=0.8.3", features = ["time-crate"] }
 serde = "1.0.152"
