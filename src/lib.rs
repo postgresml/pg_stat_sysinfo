@@ -13,6 +13,7 @@ mod crate_info;
 mod init;
 mod settings;
 mod shmem_ring_buffer;
+mod nvidia_collector;
 
 pgrx::pg_module_magic!();
 
@@ -98,3 +99,24 @@ fn maprows<'a, I: Iterator<Item = (String, Value, OffsetDateTime, f64)> + 'a>(
 
     TableIterator::new(translated)
 }
+
+#[pg_extern]
+fn pg_gpu_info() ->
+TableIterator<
+    'static,
+    (
+    name!(device_id, i32),
+    name!(device_name, String),
+    name!(total_memory_mb, f64),
+    name!(free_memory_mb, f64),
+    name!(used_memory_mb, f64),
+    name!(temperature_c, i32),
+    name!(process_info, pgrx::JsonB),
+    name!(gpu_utilization, i32),
+    name!(memory_utilization, i32)
+    ),
+> {
+    TableIterator::new(nvidia_collector::get_cuda_information().into_iter())
+}
+
+
